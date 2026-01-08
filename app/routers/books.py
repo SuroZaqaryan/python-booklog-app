@@ -1,19 +1,22 @@
 from typing import List
-from fastapi import APIRouter, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
-from app.models import BookModel
-from app.schemas import BookCreate, BookPublic, VALID_GENRES
+from app.models import BookModel, GenreModel
+from app.schemas import BookCreate, BookPublic
 
 router = APIRouter(prefix="/books", tags=["books"])
 
 
 @router.get("/genres", response_model=List[str])
-async def get_genres():
-    """Возвращает список рекомендуемых жанров (для справки)."""
-    return VALID_GENRES
+async def get_genres(db: AsyncSession = Depends(get_db)):
+    """Возвращает список рекомендуемых жанров из базы данных."""
+    result = await db.execute(select(GenreModel.name).order_by(GenreModel.name))
+    genres = result.scalars().all()
+    return list(genres)
 
 
 @router.get("", response_model=List[BookPublic])
@@ -31,13 +34,21 @@ async def get_books(db: AsyncSession = Depends(get_db)):
 
 @router.post("", response_model=BookPublic, status_code=201)
 async def create_book(book: BookCreate, db: AsyncSession = Depends(get_db)):
-    """
-    Создает новую книгу с указанным жанром.
-    
-    Жанр может быть любым строковым значением, указанным пользователем.
-    """
     data = BookModel(**book.model_dump())
     db.add(data)
     await db.commit()
     await db.refresh(data)
     return data
+
+@router.delete("/{book_id}", status_code=204)
+async def delete_book(book_id: int, db: AsyncSession = Depends(get_db)):
+    data = await db.execute(select(BookModel).where(BookModel.id == book_id))
+    result = data.scalar_one_or_none()
+
+    if result is None:
+        raise HTTPException(status_code = 404, detail = "Task not found")
+
+    await db.delete(result)
+    await db.commit()
+    return None
+

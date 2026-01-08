@@ -4,6 +4,13 @@ from sqlalchemy.sql import func
 
 from app.database import Base
 
+class GenreModel(Base):
+    __tablename__ = "genres"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False, index=True)
+
+
 class BookModel(Base):
     __tablename__ = "books"
 
