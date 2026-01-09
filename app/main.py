@@ -1,12 +1,16 @@
+"""Main FastAPI application."""
+
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
-from contextlib import asynccontextmanager
 
 from app.core.config import settings
-from app.database import engine, Base
-from app.routers import books
+from app.core.database import engine
+from app.models import Base
+from app.api.v1.api import api_router
 
 
 @asynccontextmanager
@@ -31,11 +35,16 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# Создание приложения FastAPI
 app = FastAPI(
     title=settings.project_name,
-    lifespan=lifespan
+    lifespan=lifespan,
+    openapi_url="/api/v1/openapi.json",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
 )
 
+# Настройка CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,13 +53,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(books.router)
+# Подключение API роутеров
+app.include_router(api_router)
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
     Обработчик ошибок валидации.
     Возвращает стандартный 422 для ошибок валидации.
+    
+    Args:
+        request: HTTP запрос.
+        exc: Исключение валидации.
+        
+    Returns:
+        JSONResponse: Ответ с деталями ошибки.
     """
     errors = exc.errors()
     return JSONResponse(
@@ -61,4 +79,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/")
 async def root():
-    return RedirectResponse(url="/static/index.html")
+    """
+    Корневой endpoint - редирект на документацию.
+    
+    Returns:
+        RedirectResponse: Редирект на документацию API.
+    """
+    return RedirectResponse(url="/api/docs")
