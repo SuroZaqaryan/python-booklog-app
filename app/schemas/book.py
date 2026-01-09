@@ -1,5 +1,6 @@
 """Book Pydantic schemas."""
 
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -7,7 +8,8 @@ class BookBase(BaseModel):
     """Базовая схема книги."""
 
     name: str
-    genre: str
+    genre: Optional[str] = None
+    author: Optional[str] = None
 
 
 class BookCreate(BookBase):

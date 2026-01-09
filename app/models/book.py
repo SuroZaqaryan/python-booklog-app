@@ -12,4 +12,5 @@ class BookModel(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
-    genre = Column(String, nullable=False)
+    genre = Column(String, nullable=True)
+    author = Column(String, nullable=True)

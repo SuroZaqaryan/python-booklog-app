@@ -1,5 +1,8 @@
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+python -m alembic revision --autogenerate -m "описание"  # Создать
+python -m alembic upgrade head                            # Применить
+
 # 📚 BookLog Backend
 
 Backend API для приложения управления книгами на FastAPI.
@@ -38,12 +41,23 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ### Миграции БД
 
 ```bash
-# Применить миграции
-alembic upgrade head
+# Применить все миграции (первый запуск или после получения новых миграций)
+python -m alembic upgrade head
 
-# Создать новую миграцию
-alembic revision --autogenerate -m "описание изменений"
+# Создать новую миграцию (после изменения моделей)
+python -m alembic revision --autogenerate -m "описание изменений"
+
+# Проверить текущую версию БД
+python -m alembic current
+
+# Посмотреть историю миграций
+python -m alembic history
 ```
+
+**⚠️ Важно:** Изменения в моделях SQLAlchemy НЕ применяются автоматически!
+После изменения модели нужно создать и применить миграцию.
+
+📖 **Подробное руководство:** [ALEMBIC_GUIDE.md](ALEMBIC_GUIDE.md)
 
 ## 📖 Документация API
 
@@ -106,4 +120,5 @@ backend/
 ## 📚 Дополнительно
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - подробное описание архитектуры
-- [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) - руководство по миграции
+- [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) - руководство по рефакторингу проекта
+- [ALEMBIC_GUIDE.md](ALEMBIC_GUIDE.md) - **полное руководство по работе с миграциями БД**
