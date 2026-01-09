@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
@@ -46,9 +45,6 @@ app.add_middleware(
 )
 
 app.include_router(books.router)
-
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
-
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

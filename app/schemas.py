@@ -16,3 +16,8 @@ class BookPublic(BookBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class BookStatusPublic(BaseModel):
+    label: str
+    value: str

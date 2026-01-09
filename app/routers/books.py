@@ -6,10 +6,29 @@ from sqlalchemy import select
 
 from app.database import get_db
 from app.models import BookModel, GenreModel
-from app.schemas import BookCreate, BookPublic
+from app.enums import BookStatus
+from app.schemas import BookCreate, BookPublic, BookStatusPublic
 
-router = APIRouter(prefix="/books", tags=["books"])
+router = APIRouter(prefix="/book", tags=["book"])
 
+@router.get("/statuses", response_model=list[BookStatusPublic])
+async def get_book_statuses():
+    return [
+        BookStatusPublic(
+            value=status.value,
+            label=_status_label(status)
+        )
+        for status in BookStatus
+    ]
+
+
+def _status_label(status: BookStatus) -> str:
+    return {
+        BookStatus.WANT_TO_READ: "Хочу прочитать",
+        BookStatus.READING: "Читаю",
+        BookStatus.FINISHED: "Прочитал",
+        BookStatus.DROPPED: "Бросил",
+    }[status]
 
 @router.get("/genres", response_model=List[str])
 async def get_genres(db: AsyncSession = Depends(get_db)):
